@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Yed Family Tree to GRAMPS CSV</title>
+  </head>
+
+  <body>
+    <div id="fileContent">
+    <input type="file" onchange="previewFile()" /><br />
+    <p class="content"></p>
+    </div>
+
+    
+   <script>
+        function previewFile() {
+            const content = document.getElementById("fileContent");
+            //const content = document.querySelector(".content");
+            const [file] = document.querySelector("input[type=file]").files;
+            const reader = new FileReader();
+
+        reader.addEventListener(
+            "load",
+            () => {
+            
+            var fileString = reader.result.trim();
+//console.log(fileString);
+            var PeopleString = fileString;
+            var familyString = fileString;
+            var spouseString = fileString;
+            
+            //replace Node key with atribute name
+            PeopleString = PeopleString.replace(/<data key="d3" xml:space="preserve"/gm,"~~{\"ID\"");
+            PeopleString = PeopleString.replace(/<data key="d4" xml:space="preserve"/gm,"\"Type\"");
+            PeopleString = PeopleString.replace(/<data key="d5" xml:space="preserve"/gm,"\"FirstName\"");
+            PeopleString = PeopleString.replace(/<data key="d6" xml:space="preserve"/gm,"\"LastName\"");
+            PeopleString = PeopleString.replace(/<data key="d7" xml:space="preserve"/gm,"\"Suffix\"");
+            PeopleString = PeopleString.replace(/<data key="d8" xml:space="preserve"/gm,"\"Prefix\"");
+            PeopleString = PeopleString.replace(/<data key="d9" xml:space="preserve"/gm,"\"Title\"");
+            PeopleString = PeopleString.replace(/<data key="d10" xml:space="preserve"/gm,"\"Nickname\"");
+            PeopleString = PeopleString.replace(/<data key="d11" xml:space="preserve"/gm,"\"BirthDate\"");
+            PeopleString = PeopleString.replace(/<data key="d12" xml:space="preserve"/gm,"\"Birth place\"");
+            PeopleString = PeopleString.replace(/<data key="d13" xml:space="preserve"/gm,"\"Birth source\"");
+            PeopleString = PeopleString.replace(/<data key="d14" xml:space="preserve"/gm,"\"MarriageDate\"");
+            PeopleString = PeopleString.replace(/<data key="d15" xml:space="preserve"/gm,"\"Marriage Place\"");
+            PeopleString = PeopleString.replace(/<data key="d16" xml:space="preserve"/gm,"\"Marriage source\"");
+            PeopleString = PeopleString.replace(/<data key="d17" xml:space="preserve"/gm,"\"DeathDate\"");
+            PeopleString = PeopleString.replace(/<data key="d18" xml:space="preserve"/gm,"\"Death place\"");
+            PeopleString = PeopleString.replace(/<data key="d19" xml:space="preserve"/gm,"\"Death source\"");
+            PeopleString = PeopleString.replace(/<data key="d20" xml:space="preserve"/gm,"\"Burial date\"");
+            PeopleString = PeopleString.replace(/<data key="d21" xml:space="preserve"/gm,"\"Burial place\"");
+            PeopleString = PeopleString.replace(/<data key="d22" xml:space="preserve"/gm,"\"Burial source\"");
+            PeopleString = PeopleString.replace(/<data key="d23" xml:space="preserve"/gm,"\"Indicator\"");
+            PeopleString = PeopleString.replace(/<data key="d24" xml:space="preserve"/gm,"\"Blank\"");
+            PeopleString = PeopleString.replace(/<data key="d25" xml:space="preserve"/gm,"\"Website\"");
+            PeopleString = PeopleString.replace(/<data key="d28" xml:space="preserve"/gm,"\"Photo\"");
+            PeopleString = PeopleString.replace(/<data key="d26" xml:space="preserve"/gm,"\"Description\"~~");
+            
+            PeopleString = PeopleString.replace(/~~/gm,": \"\"}~~");
+            PeopleString = PeopleString.replace(/><!\[CDATA\[/gm,": \"");
+            PeopleString = PeopleString.replace(/\]\]><\/data>\r\n      /gm,"\", ");
+            PeopleString = PeopleString.replace(/\/>\r\n      /gm,": \"\", ");
+            
+            //split file string to Array of seperate people strings
+            PeopleString = PeopleString.split("~~");
+            
+            //Filter Array down to only people items
+            var People = PeopleString.filter(item => !item.includes("\"Type\": \"family\""));
+            People = People.filter(item => item.includes("{\"ID\":"));
+            
+            var PeopleArray=[];    
+            var item; 
+            
+            //populate Array of People Objects
+            People.forEach(element => {
+                //console.log(element)
+              item = JSON.parse(element);
+              delete item.Blank;
+              PeopleArray.push(item);
+            });    
+            
+            
+            //replace Edge key with atribute name
+            var familyString = familyString.replace(/<data key="d33" xml:space="preserve"/gm,"edgeArray-{\"Person\"");
+            familyString = familyString.replace(/\]\]><\/data>\r\n      <data key="d34" xml:space="preserve"/gm,"\", \"Spouse\"");
+            familyString = familyString.replace(/\]\]><\/data>\r\n      <data key="d36"\/>\r\n      /gm,"\"}edgeArray-");
+            familyString = familyString.replace(/><!\[CDATA\[/gm,": \"");
+            
+            //split file string to Array of seperate Edge strings
+            familyString = familyString.split("edgeArray-");
+            familyString = familyString.filter(item => item.includes("{\"Person\""));
+            
+            var SpouseArray=[];
+            var ParentArray=[];
+            
+            //Populate Spouse items array and Parent item array
+            familyString.forEach(item => {
+              //console.log(item)
+              item = JSON.parse(item);
+              if (!(item.Person.includes("|"))) {
+                SpouseArray.push(item);
+              }  else{ ParentArray.push(item);}
+            })
+
+            //convert Spouse Array to JSON format  
+            var spouseJSON = JSON.stringify(SpouseArray);
+
+            //Split Spouse node value
+            spouseJSON = spouseJSON.replace(/\"Person\":/gm,"\"ID\":");
+            spouseJSON = spouseJSON.replace(/\|/gm,"\", \"Spouse2\":\"");
+            
+            //reload Spouse Array with new properties
+            SpouseArray=[];
+            SpouseArray = JSON.parse(spouseJSON);  
+            
+            var Spouses=[];  
+            
+            //populate array of Spouse Objects
+            SpouseArray.forEach(item => {
+              if (item.ID === item.Spouse) {
+                item.Spouse = item.Spouse2;
+              } 
+              Spouses.push(item);
+            })
+
+            Spouses.forEach(item =>{ delete item.Spouse2})
+
+            //convert Spouse Array to JSON format  
+            var parentsJSON = JSON.stringify(ParentArray);
+            parentsJSON = parentsJSON.replace(/\"Spouse\":/gm,"\"ID\":");
+            parentsJSON = parentsJSON.replace(/\"Person\":/gm,"\"Parent1\":");
+            parentsJSON = parentsJSON.replace(/\|/gm,"\", \"Parent2\":\"");
+            
+            //reload parent Array with new properties
+            parentArray=[];
+            parentArray = JSON.parse(parentsJSON);  
+            
+            var parents=[];  
+            
+            //populate array of parent Objects
+            parentArray.forEach(item => {parents.push(item);})
+            
+            //console.log(PeopleArray)
+            //console.log(Spouses)
+            //console.log(parents)
+
+            var CombinedArrays = []
+            var spouseElem;
+            var ParentElem;
+            //find parents and spouse for each Person
+            PeopleArray.forEach(element => {
+              spouseElem = Spouses.find(({ ID }) => ID === element.ID);
+              ParentElem = parents.find(({ ID }) => ID === element.ID);
+              CombinedArrays.push(Object.assign(element,spouseElem,ParentElem));
+            });
+            console.log(CombinedArrays)
+
+            var outputString;
+            var string;
+
+            CombinedArrays.forEach((element,index) => {
+              if(index == 0){  
+              string = "<pre>" + element.Type + "|&#0009;" + 
+                element.FirstName + "&#0009;" + element.LastName + "&#0009;" + element.Suffix + "&#0009;" + 
+                element.Prefix + "&#0009;" + element.Title + "&#0009;" + element.Nickname + "&#0009;" + 
+                element.Parent1+ "&#0009;" + element.Parent2 + "&#0009;" + element.BirthDate + "&#0009;" + 
+                element["Birth place"] + "&#0009;" + element["Birth source"] + "&#0009;" + element.Spouse + "&#0009;" +
+                element.MarriageDate + "&#0009;" + element["Marriage Place"] + "&#0009;" + element["Marriage source"] + "&#0009;" + 
+                element.DeathDate + "&#0009;" + element["Death Place"] + "&#0009;" + element["Death source"] + "&#0009;" +
+                element.BurialDate + "&#0009;" + element["Burial Place"] + "&#0009;" + element["Burial source"] + "&#0009;" +
+                element.Description + "&#0009;" + element.website + "&#0009;" + element.Photo + 
+                "<pre>";
+              } else{string = string + "<pre>" + element.Type + "&#0009;" + 
+                element.FirstName + "&#0009;" + element.LastName + "&#0009;" + element.Suffix + "&#0009;" + 
+                element.Prefix + "&#0009;" + element.Title + "&#0009;" + element.Nickname + "&#0009;" + 
+                element.Parent1+ "&#0009;" + element.Parent2 + "&#0009;" + element.BirthDate + "&#0009;" + 
+                element["Birth place"] + "&#0009;" + element["Birth source"] + "&#0009;" + element.Spouse + "&#0009;" +
+                element.MarriageDate + "&#0009;" + element["Marriage Place"] + "&#0009;" + element["Marriage source"] + "&#0009;" + 
+                element.DeathDate + "&#0009;" + element["Death Place"] + "&#0009;" + element["Death source"] + "&#0009;" +
+                element.BurialDate + "&#0009;" + element["Burial Place"] + "&#0009;" + element["Burial source"] + "&#0009;" +
+                element.Description + "&#0009;" + element.website + "&#0009;" + element.Photo + 
+                "<pre>";}
+                outputString = string;   
+            })
+
+
+            //create string
+            //content.innerText = reader.result;
+            content.innerHTML = outputString.replace(/undefined/gm,"");
+
+            },
+            false
+        );
+
+        if (file) {
+            reader.readAsText(file);
+        }
+        }
+
+
+
+
+        </script>
+
+
+</html>

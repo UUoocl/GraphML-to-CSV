@@ -2,4 +2,4 @@
 Convert a family tree layout yEd GraphML file to CSV format. 
 
 html preview
-[https://github.com/UUoocl/GraphML-to-CSV/blob/main/Read%201%20file%20by%20Import.html](https://htmlpreview.github.io/?https://github.com/UUoocl/GraphML-to-CSV/blob/main/Read%201%20file%20by%20Import.html)https://htmlpreview.github.io/?https://github.com/UUoocl/GraphML-to-CSV/blob/main/Read%201%20file%20by%20Import.html
+[https://github.com/UUoocl/GraphML-to-CSV/blob/main/Read%201%20file%20by%20Import.html](https://htmlpreview.github.io/?https://github.com/UUoocl/GraphML-to-CSV/blob/main/Read%201%20file%20by%20Import.html)

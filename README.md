@@ -12,3 +12,7 @@ https://docs.google.com/spreadsheets/d/1myXZxHrm9QIRGNq-uBq44zx7zjkzZFR6-tgZx_jf
 
 5. convert graphML to tab separated
 [https://github.com/UUoocl/GraphML-to-CSV/blob/main/Read%201%20file%20by%20Import.html](https://htmlpreview.github.io/?https://github.com/UUoocl/GraphML-to-CSV/blob/main/Read%201%20file%20by%20Import.html)
+
+copy all
+
+paste in google sheet values only (ctrl + shift + v)
